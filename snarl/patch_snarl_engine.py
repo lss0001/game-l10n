@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""把 Snarl 1.0.3 原版 exe 与 AGS 3.6.3 引擎合成为汉化版 exe。
+"""把 Snarl 1.0.3 原版 exe 与 AGS 3.6.3.15 引擎合成为汉化版 exe。
 
 用法：
     python patch_snarl_engine.py --game "C:\\Games\\Snarl 1.0.3" ^
@@ -7,13 +7,13 @@
 
 说明：
 - --game   原版游戏目录（含 Snarl.exe）
-- --engine AGS 3.6.3 的 acwin.exe（官方发布包里的 Windows 引擎）
+- --engine AGS 3.6.3.15 的 acwin.exe（官方发布包里的 Windows 引擎）
 - --out    输出目录，会生成 Snarl.exe 并复制汉化文件
 
-原理：
-    AGS 游戏 exe = 引擎 PE + 附加的游戏数据包（CLIB）。
-    用 3.6.3 引擎替换原 3.6.2 引擎，保留原游戏数据，并修正文件尾部
-    记录的数据偏移，即可支持 Unicode 与字体替换。
+合成后会应用三处兼容性修复（否则 3.6.3 引擎跑这个 3.6.2 游戏会卡死）：
+1. 角色 loop 越界检查（否则报 invalid loop 崩溃）
+2. 阻塞式动画等待（否则对话卡住不动）
+3. 淡出标志写入（否则黑屏、进不了剧情）
 """
 
 import argparse
@@ -21,6 +21,24 @@ import os
 import shutil
 import struct
 import sys
+
+# VA -> 文件偏移（PE 映像基址 0x401000，文件对齐 0x400）
+def va_to_off(va):
+    return 0x400 + (va - 0x401000)
+
+# (地址, 原始字节, 补丁字节, 说明)
+PATCHES = [
+    (0x418999, b"\x75\x4B", b"\xEB\x4B", "角色 loop 越界检查"),
+    (0x409806, b"\x74\x14", b"\xEB\x14", "跳过阻塞式动画等待"),
+]
+
+# 淡出标志写入点，全部 NOP 掉（地址, 长度）
+NOP_SITES = [
+    (0x422A37, 5), (0x44C7FD, 5), (0x478DCE, 10), (0x484A44, 10),
+    (0x484A94, 6), (0x484ABC, 5), (0x4856F3, 5), (0x4C3654, 6),
+    (0x4C36C0, 7), (0x4C3720, 7), (0x4C385C, 6), (0x4C3886, 6),
+    (0x4C3A1A, 6), (0x4C3A33, 6), (0x52B9AB, 5),
+]
 
 
 def image_end(path):
@@ -38,10 +56,29 @@ def image_end(path):
     return end
 
 
+def apply_patches(engine):
+    engine = bytearray(engine)
+    for va, old, new, desc in PATCHES:
+        o = va_to_off(va)
+        cur = bytes(engine[o:o + len(old)])
+        if cur != old:
+            sys.exit(
+                "引擎不匹配：%s 处期望 %s，实际 %s。\n"
+                "请确认使用的是 AGS 3.6.3.15 的 acwin.exe。"
+                % (desc, old.hex(), cur.hex())
+            )
+        engine[o:o + len(new)] = new
+    for va, n in NOP_SITES:
+        o = va_to_off(va)
+        engine[o:o + n] = b"\x90" * n
+    print("已应用兼容性修复：loop 检查、动画等待、淡出黑屏")
+    return bytes(engine)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--game", required=True, help="原版游戏目录")
-    ap.add_argument("--engine", required=True, help="AGS 3.6.3 acwin.exe 路径")
+    ap.add_argument("--engine", required=True, help="AGS 3.6.3.15 acwin.exe 路径")
     ap.add_argument("--out", required=True, help="输出目录")
     args = ap.parse_args()
 
@@ -56,7 +93,7 @@ def main():
     dst_exe = os.path.join(args.out, "Snarl.exe")
 
     data_off = image_end(src_exe)
-    engine = open(args.engine, "rb").read()
+    engine = apply_patches(open(args.engine, "rb").read())
 
     with open(src_exe, "rb") as fi, open(dst_exe, "wb") as fo:
         fo.write(engine)
@@ -71,14 +108,11 @@ def main():
 
     print("已生成：%s" % dst_exe)
 
-    # 复制汉化资源
     shutil.copy(os.path.join(here, "Snarl.tra"), args.out)
     shutil.copy(os.path.join(here, "acsetup.cfg"), args.out)
-    os.makedirs(os.path.join(args.out, "fonts"), exist_ok=True)
     shutil.copy(os.path.join(here, "fonts", "zh.ttf"),
                 os.path.join(args.out, "zh.ttf"))
 
-    # 原版运行库/音频
     for name in ("SDL2.dll", "audio.vox", "winsetup.exe"):
         src = os.path.join(args.game, name)
         if os.path.isfile(src):
