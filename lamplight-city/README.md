@@ -6,6 +6,9 @@
 
 > 本仓库不包含游戏本体。请先购买正版。
 
+装完想逐项检查：见 [VERIFY.md](VERIFY.md)，或运行 `verify_setup.ps1`。
+配置可直接参考 [acsetup.cfg](acsetup.cfg)（`translation=Deutsch`）。
+
 ## 这个补丁包含什么
 
 - `German.tra`：中文翻译文件（游戏通过“德语”位置加载它）

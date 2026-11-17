@@ -4,6 +4,8 @@
 
 > 本仓库不包含游戏本体，也不包含游戏数据或修改后的 exe。
 
+装完想逐项检查：见 [VERIFY.md](VERIFY.md)，或运行 `verify_setup.ps1`。
+
 ## 和 Lamplight City 补丁的区别
 
 Snarl 原版使用 **AGS 3.6.2** 引擎，不支持中文字体和 UTF-8 文本。
