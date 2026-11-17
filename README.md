@@ -10,6 +10,7 @@
 |---|---|---|
 | [Lamplight City](lamplight-city/) | AGS 3.6 | 完整汉化，10,720 条词条，含像素字体 |
 | [Snarl](snarl/) | AGS 3.6.2 → 3.6.3 | 1,641 条词条，附带引擎合成脚本 |
+| [Kathy Rain](kathy-rain/) | AGS 3.3 → 3.6.3.15 | 4,688 条词条，含像素字体与引擎补丁说明 |
 
 ## 目录结构
 
@@ -25,6 +26,13 @@
 │   ├── Snarl.tra             ← 翻译文件
 │   ├── fonts/zh.ttf          ← 开源中文字体
 │   ├── patch_snarl_engine.py ← 引擎合成脚本（需自备原版与 AGS 3.6.3）
+│   ├── README.md
+│   └── LICENSE.md
+├── kathy-rain/                《Kathy Rain》简体中文汉化
+│   ├── 简体中文.tra           ← 翻译文件
+│   ├── fonts/zh.ttf           ← 开源中文字体（Zpix）
+│   ├── engine-patches.md      ← 引擎补丁与打包说明
+│   ├── source/                ← 翻译工程文件
 │   ├── README.md
 │   └── LICENSE.md
 └── （以后新增的游戏，同样是一个文件夹）
