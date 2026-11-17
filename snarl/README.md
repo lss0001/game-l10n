@@ -4,6 +4,7 @@
 
 > 本仓库不包含游戏本体，也不包含游戏数据或修改后的 exe。
 
+从零合成：见 [BUILD.md](BUILD.md)。
 装完想逐项检查：见 [VERIFY.md](VERIFY.md)，或运行 `verify_setup.ps1`。
 
 ## 和 Lamplight City 补丁的区别
