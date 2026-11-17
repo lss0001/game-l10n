@@ -6,6 +6,23 @@
 
 > 本仓库不包含游戏本体。请先购买正版。
 
+## 快速开始
+
+- 想直接装：看下面的「安装」
+- 想从源码编译引擎：看 [BUILD.md](BUILD.md)
+- 装完想逐项检查：看 [VERIFY.md](VERIFY.md)
+
+仓库内提供的脚本：
+
+```
+build_engine.ps1          一键下载源码/依赖 → 应用补丁 → 编译 → 合成 exe → 生成 tra
+verify_setup.ps1          校验原版 exe、数据偏移、tra、字体、配置与日志
+tools/apply_engine_patches.py   给 AGS 3.6.3.15 源码打补丁
+tools/pack_engine.py            正确合成 exe（修复 40 号房间黑屏）
+source/build_tra.py             从译文工程生成 .tra
+acsetup.cfg                     可直接复制的配置样例
+```
+
 ## 这个补丁包含什么
 
 - `简体中文.tra`：中文翻译文件（AGS 翻译格式，UTF-8）
